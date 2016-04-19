@@ -1,0 +1,9 @@
+package: github.com/nii236/forex
+import:
+- package: github.com/spf13/cobra
+- package: github.com/spf13/viper
+- package: github.com/PuerkitoBio/fetchbot
+- package: github.com/temoto/robotstxt-go
+- package: github.com/PuerkitoBio/goquery
+- package: github.com/andybalholm/cascadia
+- package: github.com/fatih/set
