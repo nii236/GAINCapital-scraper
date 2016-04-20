@@ -15,11 +15,9 @@
 package cmd
 
 import (
-	"fmt"
-	"strconv"
-
 	"github.com/nii236/forex/fetcher"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // fetchCmd represents the fetch command
@@ -33,21 +31,15 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		from, err := strconv.Atoi(cmd.Flag("from").Value.String())
-		to, err := strconv.Atoi(cmd.Flag("to").Value.String())
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
 
-		fetcher.Do(from, to)
-		fmt.Println("fetch called")
+		from := viper.GetInt("from")
+		to := viper.GetInt("to")
+		pairs := viper.GetStringSlice("pairs")
+
+		fetcher.Entry(from, to, pairs)
 	},
 }
 
 func init() {
 	RootCmd.AddCommand(fetchCmd)
-	fetchCmd.Flags().IntP("from", "f", 0, "From which year")
-	fetchCmd.Flags().IntP("to", "t", 0, "From which year")
-	fetchCmd.Flags().StringP("url", "u", "http://www.google.com", "Which URL to fetch from")
 }

@@ -1,13 +1,12 @@
 package fetcher
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
-	"sync"
 
 	"regexp"
 
@@ -21,22 +20,35 @@ const (
 	basePath string = "http://ratedata.gaincapital.com"
 )
 
-var years = set.New()
-var months = set.New()
-var zips = set.New()
-var log *logrus.Logger
-var yearQueue *fetchbot.Queue
-var monthQueue *fetchbot.Queue
-var pairQueue *fetchbot.Queue
-var downloadQueue *fetchbot.Queue
+var (
+	years  = set.New()
+	months = set.New()
+	zips   = set.New()
+	pairs  = set.New()
+
+	log           *logrus.Logger
+	yearQueue     *fetchbot.Queue
+	monthQueue    *fetchbot.Queue
+	pairQueue     *fetchbot.Queue
+	downloadQueue *fetchbot.Queue
+
+	// sigChan receives os signals.
+	sigChan = make(chan os.Signal, 1)
+
+	// complete is used to report processing is done.
+	complete = make(chan error)
+
+	// shutdown provides system wide notification.
+	shutdown = make(chan struct{})
+)
 
 func handleYears(ctx *fetchbot.Context, res *http.Response, err error) {
-	log.Info("Getting available years...", ctx.Cmd.URL().String())
+	log.Infoln("Getting available years...", ctx.Cmd.URL().String())
 	if err != nil {
-		fmt.Printf("error: %s\n", err)
+		log.Errorf("error: %s\n", err)
 		return
 	}
-	fmt.Printf("[%d] %s %s\n", res.StatusCode, ctx.Cmd.Method(), ctx.Cmd.URL())
+	log.Infof("[%d] %s %s\n", res.StatusCode, ctx.Cmd.Method(), ctx.Cmd.URL())
 	doc, err := goquery.NewDocumentFromResponse(res)
 	if err != nil {
 		log.Error(err)
@@ -49,7 +61,6 @@ func handleYears(ctx *fetchbot.Context, res *http.Response, err error) {
 			if years.Has(link) {
 				uri := ctx.Cmd.URL().String() + "/" + link
 				monthQueue.SendStringGet(uri)
-				log.Info("Sending to monthQueue:", uri)
 			}
 
 		}
@@ -58,7 +69,7 @@ func handleYears(ctx *fetchbot.Context, res *http.Response, err error) {
 }
 
 func handleMonths(ctx *fetchbot.Context, res *http.Response, err error) {
-	log.Info("Fetching months...", ctx.Cmd.URL().String())
+	log.Infoln("Fetching months...", ctx.Cmd.URL().String())
 
 	doc, err := goquery.NewDocumentFromResponse(res)
 	if err != nil {
@@ -80,7 +91,7 @@ func handleMonths(ctx *fetchbot.Context, res *http.Response, err error) {
 }
 
 func handlePairs(ctx *fetchbot.Context, res *http.Response, err error) {
-	log.Info("Fetching pairs...", ctx.Cmd.URL().String())
+	log.Infoln("Fetching pairs...", ctx.Cmd.URL().String())
 	r := regexp.MustCompile(`\w.*zip`)
 	doc, err := goquery.NewDocumentFromResponse(res)
 	if err != nil {
@@ -92,6 +103,12 @@ func handlePairs(ctx *fetchbot.Context, res *http.Response, err error) {
 		if exists {
 			link = strings.TrimPrefix(link, ".\\")
 			if r.MatchString(link) {
+				pairName := link[:7]
+
+				if !pairs.Has(pairName) {
+					return
+				}
+
 				uri := ctx.Cmd.URL().String() + "/" + link
 				file := regexp.MustCompile(`\w\w\w_.*`)
 				directory := regexp.MustCompile(`\/\w\w\w\w\/.*?\/`)
@@ -117,7 +134,7 @@ func handlePairs(ctx *fetchbot.Context, res *http.Response, err error) {
 }
 
 func handleDownload(ctx *fetchbot.Context, res *http.Response, err error) {
-	log.Info("Downloading...", ctx.Cmd.URL().String())
+	log.Infoln("Downloading...", ctx.Cmd.URL().String())
 	file := regexp.MustCompile(`\w\w\w_.*`)
 	directory := regexp.MustCompile(`\/\w\w\w\w\/.*?\/`)
 
@@ -128,7 +145,7 @@ func handleDownload(ctx *fetchbot.Context, res *http.Response, err error) {
 		return
 	}
 
-	log.Info("Saving to path:", filePath)
+	log.Infoln("Saving to path:", filePath)
 
 	out, fileErr := os.Create(filePath)
 	if fileErr != nil {
@@ -136,18 +153,49 @@ func handleDownload(ctx *fetchbot.Context, res *http.Response, err error) {
 	}
 	defer out.Close()
 	io.Copy(out, res.Body)
-	log.Info("Done.")
+	log.Infoln("Done.")
 
 }
 
-// Do begins fetching from URL url
-func Do(from int, to int) {
+// Entry is the entry point for the CLI app
+func Entry(from int, to int, pairsFlag []string) {
 	log = logrus.New()
+	log.Infoln("Running fetch from", from, "to", to, "for pairs", pairsFlag)
+	for _, p := range pairsFlag {
+		pairs.Add(p)
+	}
 
+	log.Infoln("Starting fetcher app")
+	signal.Notify(sigChan, os.Interrupt)
+
+	log.Infoln("Launching scraper")
+	go processor(from, to)
+
+ControlLoop:
+	for {
+		select {
+		case <-sigChan:
+			log.Error("OS interrupt received")
+			yearQueue.Cancel()
+			monthQueue.Cancel()
+			pairQueue.Cancel()
+			downloadQueue.Cancel()
+			close(shutdown)
+			sigChan = nil
+
+		case err := <-complete:
+			log.Infof("Scraper Completed: Error[%s]", err)
+			break ControlLoop
+		}
+	}
+	log.Println("Fetcher complete")
+}
+
+func scrape(from int, to int) {
 	for i := from; i < to+1; i++ {
 		years.Add(strconv.Itoa(i))
 	}
-	log.Info("Starting scraper...")
+	log.Infoln("Starting scraper...")
 
 	fetchYearBot := fetchbot.New(fetchbot.HandlerFunc(handleYears))
 	fetchMonthBot := fetchbot.New(fetchbot.HandlerFunc(handleMonths))
@@ -166,14 +214,5 @@ func Do(from int, to int) {
 	pairQueue.Close()
 	downloadQueue.Close()
 
-	log.Info("Done.")
-
-}
-
-func spawnWorker(tasks chan string, wg *sync.WaitGroup) {
-	for cmd := range tasks {
-		log.Info("Fetching:", cmd)
-	}
-	wg.Done()
-
+	complete <- nil
 }
