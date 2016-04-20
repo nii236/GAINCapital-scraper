@@ -112,7 +112,7 @@ func handlePairs(ctx *fetchbot.Context, res *http.Response, err error) {
 				uri := ctx.Cmd.URL().String() + "/" + link
 				file := regexp.MustCompile(`\w\w\w_.*`)
 				directory := regexp.MustCompile(`\/\w\w\w\w\/.*?\/`)
-				folderErr := os.MkdirAll("./"+directory.FindString(uri), os.ModePerm)
+				folderErr := os.MkdirAll("./download/"+directory.FindString(uri), os.ModePerm)
 
 				if folderErr != nil {
 					log.Error(err)
@@ -138,7 +138,7 @@ func handleDownload(ctx *fetchbot.Context, res *http.Response, err error) {
 	file := regexp.MustCompile(`\w\w\w_.*`)
 	directory := regexp.MustCompile(`\/\w\w\w\w\/.*?\/`)
 
-	filePath := "./" + directory.FindString(ctx.Cmd.URL().String()) + file.FindString(ctx.Cmd.URL().String())
+	filePath := "./download/" + directory.FindString(ctx.Cmd.URL().String()) + file.FindString(ctx.Cmd.URL().String())
 
 	if _, pathErr := os.Stat(filePath); pathErr == nil {
 		log.Warn("File already exists.")
