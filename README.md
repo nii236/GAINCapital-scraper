@@ -1,4 +1,4 @@
-# Project Name
+# A Scraper for GAINCapital Ticker Data
 
 This is a simple script written in Go that will download historical ticker data from GAINCapital for you.
 
