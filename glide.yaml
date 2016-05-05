@@ -7,3 +7,6 @@ import:
 - package: github.com/PuerkitoBio/goquery
 - package: github.com/andybalholm/cascadia
 - package: github.com/fatih/set
+- package: github.com/influxdata/influxdb
+  subpackages:
+  - blob/master/client/v2

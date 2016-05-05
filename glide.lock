@@ -1,5 +1,5 @@
-hash: 75229643873d1e1a521a9f21fb14a0a8a30197fd15c47357a61d669beb3a14dc
-updated: 2016-04-18T17:09:51.634013779+08:00
+hash: 1d8d0c7b54dae4bc2ec36edcd4838440b82d7224310bab95516f9bfa80211db6
+updated: 2016-04-20T17:07:43.503881917+08:00
 imports:
 - name: github.com/andybalholm/cascadia
   version: 3ad29d1ad1c4f2023e355603324348cf1f4b2d48
@@ -20,6 +20,10 @@ imports:
   - json/token
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/influxdata/influxdb
+  version: 7ca9992ceccd2965f614462ae7e2c4ca67878384
+  subpackages:
+  - blob/master/client/v2
 - name: github.com/kr/pretty
   version: add1dbc86daf0f983cd4a48ceb39deb95c729b67
 - name: github.com/kr/text
@@ -32,6 +36,8 @@ imports:
   version: 259e93bccc058eb7cecbf2eca5f7703c8987c05f
 - name: github.com/PuerkitoBio/goquery
   version: 2e29ea41f0d13f4a303c75553f4eeadddc7a4c56
+- name: github.com/Sirupsen/logrus
+  version: 081307d9bc1364753142d5962fc1d795c742baaf
 - name: github.com/spf13/cast
   version: 27b586b42e29bec072fe7379259cc719e1289da6
 - name: github.com/spf13/cobra
@@ -49,8 +55,12 @@ imports:
   subpackages:
   - html
   - html/atom
+- name: golang.org/x/sys
+  version: f64b50fbea64174967a8882830d621a18ee1548e
+  subpackages:
+  - unix
 - name: gopkg.in/fsnotify.v1
-  version: 836bfd95fecc0f1511dd66bdbf2b5b61ab8b00b6
+  version: 30411dbcefb7a1da7e84f75530ad3abe4011b4f8
 - name: gopkg.in/yaml.v2
   version: a83829b6f1293c91addabc89d0571c246397bbf4
 devImports: []
