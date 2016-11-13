@@ -18,7 +18,7 @@ Make sure you have:
 ```
 $ git clone git@github.com:nii236/GAINCapital-scraper.git
 $ cd GAINCapital-scraper
-$ glide up
+$ glide install
 $ go build
 ```
 
@@ -38,7 +38,7 @@ Create a `config.json` file. Here's an example:
 Run the program:
 
 ```
-./GAINCapital-scraper
+./GAINCapital-scraper fetch
 ```
 
 Enjoy!
