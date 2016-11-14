@@ -1,5 +1,5 @@
 hash: 1d8d0c7b54dae4bc2ec36edcd4838440b82d7224310bab95516f9bfa80211db6
-updated: 2016-04-20T17:07:43.503881917+08:00
+updated: 2016-11-13T17:13:29.664998986-05:00
 imports:
 - name: github.com/andybalholm/cascadia
   version: 3ad29d1ad1c4f2023e355603324348cf1f4b2d48
@@ -12,10 +12,10 @@ imports:
   subpackages:
   - hcl/ast
   - hcl/parser
-  - hcl/token
-  - json/parser
   - hcl/scanner
   - hcl/strconv
+  - hcl/token
+  - json/parser
   - json/scanner
   - json/token
 - name: github.com/inconshreveable/mousetrap
@@ -24,6 +24,9 @@ imports:
   version: 7ca9992ceccd2965f614462ae7e2c4ca67878384
   subpackages:
   - blob/master/client/v2
+  - client/v2
+  - models
+  - pkg/escape
 - name: github.com/kr/pretty
   version: add1dbc86daf0f983cd4a48ceb39deb95c729b67
 - name: github.com/kr/text
@@ -63,4 +66,4 @@ imports:
   version: 30411dbcefb7a1da7e84f75530ad3abe4011b4f8
 - name: gopkg.in/yaml.v2
   version: a83829b6f1293c91addabc89d0571c246397bbf4
-devImports: []
+testImports: []

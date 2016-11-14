@@ -26,7 +26,7 @@ var cfgFile string
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
-	Use:   "forex",
+	Use:   "GAINCapital-scraper",
 	Short: "Utilities for ticker data at GAINCapital",
 	Long: `This app does various useful things with the free ticker data available at
 GAINcapital. It can fetch, parse, unzip ticker data and also load into an InfluxDB

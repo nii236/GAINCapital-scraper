@@ -15,7 +15,7 @@
 package cmd
 
 import (
-	"github.com/nii236/forex/fetcher"
+	"github.com/nii236/GAINCapital-scraper/fetcher"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

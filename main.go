@@ -14,7 +14,7 @@
 
 package main
 
-import "github.com/nii236/forex/cmd"
+import "github.com/nii236/GAINCapital-scraper/cmd"
 
 func main() {
 	cmd.Execute()
